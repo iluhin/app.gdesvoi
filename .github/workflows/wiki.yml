@@ -4,13 +4,17 @@
 # редактировать её руками неудобно: страницы разъезжаются с заметками к
 # выпускам. Здесь они лежат рядом с кодом страницы и выкладываются кнопкой.
 #
-# Actions → «Выкладка вики» → Run workflow.
+# Сама — при каждом изменении папки wiki/ в main; вручную — Actions →
+# «Выкладка вики» → Run workflow.
 #
 # Вики должна быть создана: вкладка Wiki → сохранить любую первую страницу,
 # иначе репозитория вики ещё не существует и пушить некуда.
 name: Выкладка вики
 
 on:
+  push:
+    branches: [main]
+    paths: ['wiki/**', '.github/workflows/wiki.yml']
   workflow_dispatch:
     inputs:
       prune:
@@ -31,7 +35,7 @@ jobs:
       - name: Перенести страницы и запушить
         env:
           GH_TOKEN: ${{ github.token }}
-          PRUNE: ${{ inputs.prune }}
+          PRUNE: ${{ github.event_name == 'push' || inputs.prune }}
         run: |
           ls wiki/*.md >/dev/null || { echo "в wiki/ нет страниц"; exit 1; }
           git clone "https://x-access-token:$GH_TOKEN@github.com/${{ github.repository }}.wiki.git" wiki-repo
